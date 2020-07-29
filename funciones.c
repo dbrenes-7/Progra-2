@@ -1,16 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define Nodo struct nodo
 #define Arista struct arista
 #define Lista struct pila
+#define TAMANO 100
 
 Nodo{
-    char dato;
+    char dato[TAMANO];
     Nodo* siguiente;
     Arista* adyacencia;
     int visitado,terminado;
     int monto;
-    char anterior;
+    char anterior[TAMANO];
 };
 
 Arista{
@@ -33,11 +35,7 @@ void insertarNodo();
 void agregarArista(Nodo*aux,Nodo*aux2,Arista*nuevo);
 void insertarArista();
 void visualizarGrafo();
-void recorridos();
-void recorridoAnchura();
-void recorridoProfundidad(Nodo* aux);
 void insertarPila(Nodo* aux);
-void insertarCola(Nodo* aux);
 Nodo*desencolar();
 void reiniciar();
 void simulacion_Vehiculo_Taxi();
@@ -60,7 +58,7 @@ int main(){
         if(opcion==1){insertarNodo();}
         else if (opcion==2){insertarArista();}
         else if (opcion==3){visualizarGrafo();}
-        else if(opcion==4){recorridos();}
+        else if(opcion==4){ return 1;}
         else if (opcion==5){configuracion_Inicial();}
         else if (opcion==6){ return 1;}
     }while(opcion<=6);
@@ -75,12 +73,12 @@ void insertarNodo(){
     Nodo* nuevo=(Nodo*)malloc(sizeof(Nodo));
     fflush(stdin);
     printf("\nIngrese vertice:");
-    scanf("%c",&nuevo->dato);
+    scanf("%s",&nuevo->dato);
     nuevo->siguiente=NULL;
     nuevo->adyacencia=NULL;
     nuevo->visitado=nuevo->terminado=0;
     nuevo->monto=-1;
-    nuevo->anterior=0;
+    strcpy(nuevo->anterior,"0");
     if(inicio==NULL){
         inicio=nuevo;
     }else{
@@ -94,7 +92,7 @@ void insertarNodo(){
 }
 
 void insertarArista(){
-    char ini, fin;
+    char ini[TAMANO], fin[TAMANO];
     Arista* nuevo=(Arista*)malloc(sizeof(Arista));
     nuevo->siguiente=NULL;
     Nodo* aux;
@@ -107,7 +105,7 @@ void insertarArista(){
     }
     fflush(stdin);
     printf("\nIngresar Nodo Inicial y Final:");
-    scanf("%c %c",&ini,&fin);
+    scanf("%s %s",&ini,&fin);
     printf("\nIngresar Peso de la arista:");
     scanf("%i",&nuevo->peso);
     printf("\nIngresar el Tiempo de la arista:");
@@ -115,7 +113,7 @@ void insertarArista(){
     aux=inicio;
     aux2=inicio;
     while(aux2!=NULL){
-        if(aux2->dato==fin){
+        if(strcmp(aux2->dato,fin)==0){
             break;
         }
         aux2=aux2->siguiente;
@@ -127,7 +125,7 @@ void insertarArista(){
         return;
     }
     while(aux!=NULL){
-        if(aux->dato==ini){
+        if(strcmp(aux->dato,ini)==0){
             agregarArista(aux,aux2,nuevo);
             return;
         }
@@ -158,11 +156,11 @@ void visualizarGrafo(){
     Arista* ar;
     printf("Nodos\n");
     while(aux!=NULL){
-        printf("%c:    ",aux->dato);
+        printf("%s:    ",aux->dato);
         if(aux->adyacencia!=NULL){
             ar=aux->adyacencia;
             while(ar!=NULL){
-                printf(" %c",ar->vrt->dato);
+                printf(" %s",ar->vrt->dato);
                 ar=ar->siguiente;
             }
         }
@@ -170,98 +168,6 @@ void visualizarGrafo(){
         aux=aux->siguiente;
     }
     printf("\n");
-}
-
-void recorridos(){
-    char vertice;
-    Nodo*aux=inicio,*aux2=inicio;
-    if(inicio!=NULL){
-        fflush(stdin);
-        printf("\nEscoger vertice inicial:");
-        scanf("%c",&vertice);
-        while(aux!=NULL){
-            if(aux->dato==vertice)
-                break;
-            aux=aux->siguiente;
-        }
-        if(aux==NULL){
-            printf("\n---------------------\n");
-            printf("\nVertice no encontrado\n");
-            printf("\n---------------------\n");
-        }else{
-            printf("Recorrido por anchura: ");
-            aux->visitado=1;
-            insertarCola(aux);
-            recorridoAnchura();
-            reiniciar();
-            printf("\nRecorrido por profundidad: ");
-            recorridoProfundidad(aux);
-            while(aux2!=NULL){
-                if(aux2->terminado==0)
-                    recorridoProfundidad(aux2);
-                aux2=aux2->siguiente;
-            }
-            while(ini!=NULL)
-                printf("%c ",desencolar()->dato);
-            reiniciar();
-            printf("\n");
-        }
-    }
-}
-// 0407 Contrase�a de MemoLey
-// 1-0 Contrase�a de internet
-void recorridoAnchura(){
-    Nodo*aux=desencolar();
-    if(aux==NULL)
-        return;
-    printf("%c ",aux->dato);
-    if(aux->adyacencia!=NULL){
-        Arista*a=aux->adyacencia;
-        while(a!=NULL){
-            if(a->vrt->visitado==0){
-                insertarCola(a->vrt);
-                a->vrt->visitado=1;
-            }
-            a=a->siguiente;
-        }
-    }
-    recorridoAnchura();
-
-}
-
-void recorridoProfundidad(Nodo* aux){
-    Arista*a;
-    aux->visitado=1;
-    if(aux->adyacencia!=NULL){
-        a=aux->adyacencia;
-        while(a!=NULL){
-            if(a->vrt->visitado==0){
-                recorridoProfundidad(a->vrt);
-            }
-            a=a->siguiente;
-        }
-    }
-    aux->terminado=1;
-    insertarPila(aux);
-}
-
-int buscarNodo(Nodo* aux,char buscado){
-    Arista*a;
-    aux->visitado=1;
-    if(aux->adyacencia!=NULL){
-        a=aux->adyacencia;
-        while(a!=NULL){
-            if(a->vrt->visitado==0){
-                recorridoProfundidad(a->vrt);
-            }
-            a=a->siguiente;
-        }
-    }
-    aux->terminado=1;
-    insertarPila(aux);
-    if(aux->dato==buscado){
-        return 0;
-    }
 }
 
 void insertarPila(Nodo* aux){
@@ -318,14 +224,14 @@ void reiniciar(){
 //Lorem Ipsum
 void simulacion_Vehiculo_Taxi(int maxPasajeros){
     Nodo*aux=inicio;
-    char a,b;
+    char a[TAMANO],b[TAMANO];
     int tiempo=0,distancia=0;
     int random_Pasajeros=rand()%maxPasajeros;
     fflush(stdin);
     printf("\nIngresar punto de incio y destino:");
-    scanf("%c %c",&a,&b);
+    scanf("%s %s",&a,&b);
     while(aux!=NULL){
-        if(aux->dato==a){
+        if(strcmp(aux->dato,a)==0){
             aux->terminado=1;
             aux->monto=0;
             break;
@@ -343,7 +249,8 @@ void simulacion_Vehiculo_Taxi(int maxPasajeros){
         while(a!=NULL){
             if(a->vrt->monto==-1 || (aux->monto+a->peso)<a->vrt->monto){
                 a->vrt->monto=aux->monto+a->peso;
-                a->vrt->anterior=aux->dato;
+                strcpy(a->vrt->anterior,aux->dato);
+                //a->vrt->anterior=aux->dato;
                 distancia = distancia + a->peso;
                 tiempo = tiempo + a->tiempo;
             }
@@ -351,30 +258,31 @@ void simulacion_Vehiculo_Taxi(int maxPasajeros){
         }
         aux=inicio;
         Nodo*min=inicio;
-        while(min->anterior==0 || min->terminado ==1)
+        while(strncmp(min->anterior,"0",1)==0 || min->terminado ==1)
             min=min->siguiente;
         while(aux!=NULL){
-            if(aux->monto<min->monto && aux->terminado==0 && aux->anterior!=0)
+            if(aux->monto<min->monto && aux->terminado==0 && strncmp(aux->anterior,"0",1)!=0)
                 min=aux;
             aux=aux->siguiente;
         }
         aux=min;
         aux->terminado=1;
-        if(aux->dato==b)
+        if(strcmp(aux->dato,b)==0)
             break;
     }
-    while(aux->anterior!=0){
+    while(strncmp(aux->anterior,"0",1)!=0){
         insertarPila(aux);
-        char temp=aux->anterior;
+        char temp[TAMANO];
+        strcpy(temp,aux->anterior);
         aux=inicio;
-        while(aux->dato!=temp){
+        while(strcmp(aux->dato,temp)!=0){
             aux=aux->siguiente;
         }
     }
     insertarPila(aux);
     printf("\nRecorrido\n");
     while(ini!=NULL){
-        printf("%c ",desencolar()->dato);
+        printf("%s ",desencolar()->dato);
     }
     printf("\n");
     printf("Distancia del viaje: %d\n",distancia);
@@ -385,14 +293,14 @@ void simulacion_Vehiculo_Taxi(int maxPasajeros){
 
 void simulacion_Bus_Tren(int maxPasajeros){
     Nodo*aux=inicio;
-    char a,b;
+    char a[TAMANO],b[TAMANO];
     int tiempo=0,distancia=0,random;
     int pasajeros_entrada=rand()%maxPasajeros,pasajeros_salida=0;
     fflush(stdin);
     printf("\nIngresar punto de incio y destino:");
-    scanf("%c %c",&a,&b);
+    scanf("%s %s",&a,&b);
     while(aux!=NULL){
-        if(aux->dato==a){
+        if(strcmp(aux->dato,a)==0){
             aux->terminado=1;
             aux->monto=0;
             break;
@@ -410,7 +318,9 @@ void simulacion_Bus_Tren(int maxPasajeros){
         while(a!=NULL){
             if(a->vrt->monto==-1 || (aux->monto+a->peso)<a->vrt->monto){
                 a->vrt->monto=aux->monto+a->peso;
-                a->vrt->anterior=aux->dato;
+                printf("Primer anterior: %s",a->vrt->anterior);
+                strcpy(a->vrt->anterior,aux->dato);
+                printf("Segundo anterior: %s",a->vrt->anterior);
                 distancia = distancia + a->peso;
                 tiempo = tiempo + a->tiempo;
                 printf("\nIniciaron %d pasajeros",pasajeros_entrada);
@@ -426,30 +336,31 @@ void simulacion_Bus_Tren(int maxPasajeros){
         }
         aux=inicio;
         Nodo*min=inicio;
-        while(min->anterior==0 || min->terminado ==1)
+        while(strncmp(min->anterior,"0",1)==0 || min->terminado ==1)
             min=min->siguiente;
         while(aux!=NULL){
-            if(aux->monto<min->monto && aux->terminado==0 && aux->anterior!=0)
+            if(aux->monto<min->monto && aux->terminado==0 && strncmp(aux->anterior,"0",1)!=0)
                 min=aux;
             aux=aux->siguiente;
         }
         aux=min;
         aux->terminado=1;
-        if(aux->dato==b)
+        if(strcmp(aux->dato,b)==0)
             break;
     }
-    while(aux->anterior!=0){
+    while(strncmp(aux->anterior,"0",1)!=0){
         insertarPila(aux);
-        char temp=aux->anterior;
+        char temp[TAMANO];
+        strcpy(temp,aux->anterior);
         aux=inicio;
-        while(aux->dato!=temp){
+        while(strcmp(aux->dato,temp)!=0){
             aux=aux->siguiente;
         }
     }
     insertarPila(aux);
     printf("\nRecorrido\n");
     while(ini!=NULL){
-        printf("%c ",desencolar()->dato);
+        printf("%s ",desencolar()->dato);
     }
     printf("\n");
     printf("Distancia del viaje: %d\n",distancia);
